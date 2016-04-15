@@ -48,6 +48,7 @@ if (COMPILE_CC_CORE_LIB_WITH_CGAL)
 endif()
 
 if (COMPILE_CC_CORE_LIB_WITH_TBB)
+	include_directories( ${TBB_INCLUDE_DIRS} )
 	target_link_libraries( ${PROJECT_NAME} ${TBB_LIBRARIES} )
 	set_property( TARGET ${PROJECT_NAME} APPEND PROPERTY COMPILE_DEFINITIONS USE_TBB_LIB )
 endif()
