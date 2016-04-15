@@ -9,7 +9,12 @@
 		#include <ppl.h>
 		#define SortAlgo Concurrency::parallel_sort
 
-	#else
+  #elif (USE_TBB_LIB)
+
+		#include <tbb/parallel_sort.h>
+		#define SortAlgo tbb::parallel_sort
+
+  #else
 
 		//TODO: find a portable parallel sort algorithm
 		#define SortAlgo std::sort

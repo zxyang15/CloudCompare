@@ -6,19 +6,23 @@ include ( ../CMakePolicies.cmake )
 # Options
 option( COMPILE_CC_CORE_LIB_WITH_QT "Check to compile CC_CORE_LIB with Qt (to enable parallel processing)" ON )
 option( COMPILE_CC_CORE_LIB_WITH_CGAL "Check to compile CC_CORE_LIB with CGAL lib. (to enable Delaunay 2.5D triangulation with a GPL compliant licence)" OFF )
+option( COMPILE_CC_CORE_LIB_WITH_TBB " Check to compile CC_CORE_LIB with Intel Threading Building Blocks lib. (to enable enhanced parallel computing )" OFF )
 option( COMPILE_CC_CORE_LIB_SHARED "Check to compile CC_CORE_LIB as a shared library (DLL/so)" ON )
 
 # to compile CCLib only! (CMake implicitly imposes to declare a project before anything...)
 project( CC_DUMMY_PROJECT )
 
-# CGAL takes precedence over triangle
+# Additional dependencies (only Qt in fact)
+if (COMPILE_CC_CORE_LIB_WITH_QT)
+	include( ../CMakeExternalLibs.cmake )
+endif()
+
 if (COMPILE_CC_CORE_LIB_WITH_CGAL)
 	include (CGALSupport.cmake)
 endif()
 
-# Additional dependencies (only Qt in fact)
-if (COMPILE_CC_CORE_LIB_WITH_QT)
-	include( ../CMakeExternalLibs.cmake )
+if (COMPILE_CC_CORE_LIB_WITH_TBB)
+	include(FindTBB.cmake)
 endif()
 
 project( CC_CORE_LIB VERSION 1.0 )
@@ -41,6 +45,11 @@ endif()
 if (COMPILE_CC_CORE_LIB_WITH_CGAL)
 	target_link_libraries( ${PROJECT_NAME} ${CGAL_LIBRARIES} )
 	set_property( TARGET ${PROJECT_NAME} APPEND PROPERTY COMPILE_DEFINITIONS USE_CGAL_LIB )
+endif()
+
+if (COMPILE_CC_CORE_LIB_WITH_TBB)
+	target_link_libraries( ${PROJECT_NAME} ${TBB_LIBRARIES} )
+	set_property( TARGET ${PROJECT_NAME} APPEND PROPERTY COMPILE_DEFINITIONS USE_TBB_LIB )
 endif()
 
 if ( COMPILE_CC_CORE_LIB_WITH_QT )
