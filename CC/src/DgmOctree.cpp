@@ -37,6 +37,8 @@
 //#define COMPUTE_NN_SEARCH_STATISTICS
 //#define ADAPTATIVE_BINARY_SEARCH
 
+#include <tbb/task_group.h>
+
 #ifdef USE_QT
 #ifndef QT_DEBUG
 //enables multi-threading handling
@@ -3186,20 +3188,13 @@ DgmOctree::octreeCell::~octreeCell()
 		delete points;
 }
 
+
 #ifdef ENABLE_MT_OCTREE
 
 #include <QtCore>
 #include <QApplication>
 #include <QtConcurrentMap>
 #include <QThreadPool>
-
-/*** FOR THE MULTI THREADING WRAPPER ***/
-struct octreeCellDesc
-{
-	DgmOctree::CellCode truncatedCode;
-	unsigned i1, i2;
-	unsigned char level;
-};
 
 static DgmOctree* s_octree_MT = 0;
 static DgmOctree::octreeCellFunc s_func_MT = 0;
@@ -3259,6 +3254,27 @@ void LaunchOctreeCellFunc_MT(const octreeCellDesc& desc)
 
 #endif
 
+inline void DgmOctree::doOneCell( const octreeCellDesc & cellDesc,
+																	const octreeCellFunc & func,
+																	void** & additionalParameters,
+																	NormalizedProgress & nprogress
+)
+{
+	const DgmOctree::cellsContainer& pointsAndCodes = this->pointsAndTheirCellCodes();
+
+	//cell descriptor
+	DgmOctree::octreeCell cell(this);
+	cell.level = cellDesc.level;
+	cell.index = cellDesc.i1;
+	cell.truncatedCode = cellDesc.truncatedCode;
+	for (unsigned i = cellDesc.i1; i <= cellDesc.i2; ++i)
+		cell.points->addPointIndex(pointsAndCodes[i].theIndex);
+
+	if (!(*func)(cell, additionalParameters, &nprogress)) {
+		tbb::task::self().cancel_group_execution();
+	}
+}
+
 unsigned DgmOctree::executeFunctionForAllCellsAtLevel(	unsigned char level,
 														octreeCellFunc func,
 														void** additionalParameters,
@@ -3293,26 +3309,10 @@ unsigned DgmOctree::executeFunctionForAllCellsAtLevel(	unsigned char level,
 	if (!multiThread)
 #endif
 	{
+
+
 		//we get the maximum cell population for this level
 		unsigned maxCellPopulation = m_maxCellPopulation[level];
-
-		//cell descriptor (initialize it with first cell/point)
-		octreeCell cell(this);
-		if (!cell.points->reserve(maxCellPopulation)) //not enough memory
-			return 0;
-		cell.level = level;
-		cell.index = 0;
-
-		//binary shift for cell code truncation
-		unsigned char bitDec = GET_BIT_SHIFT(level);
-
-		//iterator on cell codes
-		cellsContainer::const_iterator p = m_thePointsAndTheirCellCodes.begin();
-
-		//init with first cell
-		cell.truncatedCode = (p->theCode >> bitDec);
-		cell.points->addPointIndex(p->theIndex); //can't fail (see above)
-		++p;
 
 		//number of cells for this level
 		unsigned cellCount = getCellNumber(level);
@@ -3344,39 +3344,46 @@ unsigned DgmOctree::executeFunctionForAllCellsAtLevel(	unsigned char level,
 		s_binarySearchCount = 0.0;
 #endif
 
-		//for each point
-		for (; p != m_thePointsAndTheirCellCodes.end(); ++p)
+		tbb::task_group g;
+
+		//binary shift for cell code truncation
+		unsigned char bitDec = GET_BIT_SHIFT(level);
+
+		//iterator on cell codes
+		cellsContainer::const_iterator p = m_thePointsAndTheirCellCodes.begin();
+
+		//cell descriptor (init. with first point/cell)
+		octreeCellDesc cellDesc;
+		cellDesc.i1 = 0;
+		cellDesc.i2 = 0;
+		cellDesc.level = level;
+		cellDesc.truncatedCode = (p->theCode >> bitDec);
+		++p;
+
+
+		//sweep through the octree
+		for (; p!=m_thePointsAndTheirCellCodes.end(); ++p)
 		{
-			//check if it belongs to the current cell
 			CellCode nextCode = (p->theCode >> bitDec);
-			if (nextCode != cell.truncatedCode)
+
+			if (nextCode != cellDesc.truncatedCode)
 			{
-				//if not, we call the user function on the previous cell
-				result = (*func)(cell, additionalParameters, &nprogress);
-
-				if (!result)
-					break;
-
-				//and we start a new cell
-				cell.index += cell.points->size();
-				cell.points->clear(false);
-				cell.truncatedCode = nextCode;
-
-				//if (!nprogress.oneStep())
-				//{
-				//	//process canceled by user
-				//	result = false;
-				//	break;
-				//}
+				g.run( [&, cellDesc]()
+					   { doOneCell(cellDesc, func, additionalParameters, nprogress); }
+				);
+				cellDesc.i1=cellDesc.i2+1;
 			}
 
-			cell.points->addPointIndex(p->theIndex); //can't fail (see above)
+			cellDesc.truncatedCode = nextCode;
+			++cellDesc.i2;
 		}
-
-		//don't forget last cell!
-		if (result)
-			result = (*func)(cell, additionalParameters, &nprogress);
-
+		//don't forget the last cell!
+		g.run( [&, cellDesc]()
+			   { doOneCell(cellDesc, func, additionalParameters, nprogress); }
+		);
+		tbb::task_group_status status = g.wait();
+		if(status == tbb::task_group_status::canceled)
+			result = false;
 #ifdef COMPUTE_NN_SEARCH_STATISTICS
 		FILE* fp=fopen("octree_log.txt","at");
 		if (fp)

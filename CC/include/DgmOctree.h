@@ -400,11 +400,19 @@ public:
 		//! Default destructor
 		virtual ~octreeCell();
 
-	private:
-		
-		//! Copy constructor
+
 		octreeCell(const octreeCell& cell);
 	};
+
+
+		//TODO: ifdef that
+		/*** FOR THE MULTI THREADING WRAPPER ***/
+		struct octreeCellDesc
+		{
+			DgmOctree::CellCode truncatedCode;
+			unsigned i1, i2;
+			unsigned char level;
+		};
 
 	//! Generic form of a function that can be applied automatically to all cells of the octree
 	/** See DgmOctree::executeFunctionForAllCellsAtLevel and 
@@ -420,6 +428,7 @@ public:
 	/******************************/
 	/**          METHODS         **/
 	/******************************/
+
 
 	//! DgmOctree constructor
 	/** \param cloud the cloud to construct the octree on
@@ -1252,6 +1261,11 @@ protected:
 		\return the index of the cell (or 'm_numberOfProjectedPoints' if none found)
 	**/
 	unsigned getCellIndex(CellCode truncatedCellCode, unsigned char bitDec, unsigned begin, unsigned end) const;
+
+	inline void doOneCell( const octreeCellDesc & cellDesc,
+						   const octreeCellFunc  & func,
+						   void** & additionalParameters,
+						   NormalizedProgress & nprogress);
 };
 
 }
