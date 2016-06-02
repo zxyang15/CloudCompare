@@ -26,6 +26,7 @@
 
 //Qt
 #include <QObject>
+#include <QtCore/QSet.h>
 
 //! Clipping box
 class QCC_DB_LIB_API ccClipBox : public QObject, public ccHObject, public ccInteractor
@@ -35,7 +36,7 @@ class QCC_DB_LIB_API ccClipBox : public QObject, public ccHObject, public ccInte
 public:
 
 	//! Default constructor
-	ccClipBox(ccHObject* associatedEntity = 0, QString name = QString("Clipping box"));
+	ccClipBox(ccHObject* associatedEntity = nullptr, QString name = QString("Clipping box"));
 
 	//! Destructor
 	virtual ~ccClipBox();
@@ -45,6 +46,9 @@ public:
 	**/
 	bool setAssociatedEntity(ccHObject* associatedEntity);
 
+	bool setAssociatedEntities(QSet<ccHObject*> associatedEntities);
+
+	//TODO: addAssociatedE and removeAssociated ?
 	//inherited from ccHObject
 	virtual ccBBox getOwnBB(bool withGLFeatures = false) override;
 
@@ -117,9 +121,11 @@ public:
 	//! Returns the box parameters
 	void get(ccBBox& extents, ccGLMatrix& transformation);
 
+	//TODO: most problematic part ?
 	//! Associated entity
-	inline ccHObject* getAssociatedEntity() const { return m_associatedEntity; }
+	inline ccHObject* getAssociatedEntity() const { return m_associatedEntities.toList()[0]; }
 
+	inline QSet<ccHObject*> getAssociatedEnties() const { return m_associatedEntities; }
 signals:
 
 	//! Signal sent each time the box is modified
@@ -137,9 +143,9 @@ protected: //methods
 	PointCoordinateType computeArrowsScale() const;
 
 protected: //members
-	
-	//! Associated entity
-	ccHObject* m_associatedEntity;
+
+	//! Associated entities
+	QSet<ccHObject *> m_associatedEntities;
 
 	//! Clipping box
 	ccBBox m_box;
