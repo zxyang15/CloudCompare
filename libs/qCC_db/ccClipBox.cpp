@@ -205,7 +205,7 @@ ccClipBox::ccClipBox(ccHObject* associatedEntity, QString name/*= QString("clipp
 //TODO
 ccClipBox::~ccClipBox()
 {
-	setAssociatedEntity(0);
+	removeAssociatedEntities();
 }
 
 void ccClipBox::update()
@@ -357,6 +357,11 @@ bool ccClipBox::setAssociatedEntity(ccHObject* entity)
 
 	return true;
 }
+
+bool ccClipBox::removeAssociatedEntities() {
+	setAssociatedEntity(0);
+}
+
 
 bool ccClipBox::addAssociatedEntity(ccHObject *entity) {
 	if (entity)

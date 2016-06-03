@@ -51,7 +51,8 @@ public:
 	**/
 	bool addAssociatedEntity(ccHObject *entity);
 
-	//TODO: removeAssociatedE ?
+	bool removeAssociatedEntities();
+
 	//inherited from ccHObject
 	virtual ccBBox getOwnBB(bool withGLFeatures = false) override;
 
@@ -128,7 +129,6 @@ public:
 	//! Associated entity
 	inline ccHObject* getAssociatedEntity() const { return m_associatedEntities.toList()[0]; }
 
-	inline QSet<ccHObject*> getAssociatedEnties() const { return m_associatedEntities; }
 signals:
 
 	//! Signal sent each time the box is modified

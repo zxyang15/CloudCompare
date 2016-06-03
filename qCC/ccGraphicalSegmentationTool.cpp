@@ -239,6 +239,7 @@ bool ccGraphicalSegmentationTool::start()
 	m_clipBox->setBox(fakeBB);
 	m_clipBox->setVisible(true);
 	m_clipBox->setEnabled(true);
+	m_clipBox->setSelected(true);
 	m_associatedWin->addToOwnDB(m_clipBox);
 
 	return ccOverlayDialog::start();
@@ -253,7 +254,7 @@ void ccGraphicalSegmentationTool::removeAllEntities(bool unallocateVisibilityArr
 			ccHObjectCaster::ToGenericPointCloud(*p)->unallocateVisibilityArray();
 		}
 	}
-	//TODO clipping
+	m_clipBox->removeAssociatedEntities();
 	m_toSegment.clear();
 }
 
