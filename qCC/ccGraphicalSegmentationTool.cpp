@@ -98,6 +98,7 @@ ccGraphicalSegmentationTool::ccGraphicalSegmentationTool(QWidget* parent)
 
 	m_polyVertices = new ccPointCloud("vertices");
 	m_segmentationPoly = new ccPolyline(m_polyVertices);
+	m_clipBox = new ccClipBox();
 	m_segmentationPoly->setForeground(true);
 	m_segmentationPoly->setColor(ccColor::green);
 	m_segmentationPoly->showColors(true);
@@ -127,6 +128,10 @@ ccGraphicalSegmentationTool::~ccGraphicalSegmentationTool()
 	if (m_polyVertices)
 		delete m_polyVertices;
 	m_polyVertices = 0;
+
+	if (m_clipBox)
+		delete m_clipBox;
+	m_clipBox = 0;
 }
 
 void ccGraphicalSegmentationTool::onShortcutTriggered(int key)
@@ -225,8 +230,16 @@ bool ccGraphicalSegmentationTool::start()
 	pauseSegmentationMode(false);
 
 	m_somethingHasChanged = false;
+	m_associatedWin->addToOwnDB(m_segmentationPoly);
 
 	reset();
+
+	//FIXME FakeBB fo test purpose
+	ccBBox fakeBB(m_clipBox->getBox().minCorner() /4.,m_clipBox->getBox().maxCorner() /4. );
+	m_clipBox->setBox(fakeBB);
+	m_clipBox->setVisible(true);
+	m_clipBox->setEnabled(true);
+	m_associatedWin->addToOwnDB(m_clipBox);
 
 	return ccOverlayDialog::start();
 }
@@ -240,7 +253,7 @@ void ccGraphicalSegmentationTool::removeAllEntities(bool unallocateVisibilityArr
 			ccHObjectCaster::ToGenericPointCloud(*p)->unallocateVisibilityArray();
 		}
 	}
-
+	//TODO clipping
 	m_toSegment.clear();
 }
 
@@ -260,6 +273,7 @@ void ccGraphicalSegmentationTool::stop(bool accepted)
 		m_associatedWin->setPickingMode(ccGLWindow::DEFAULT_PICKING);
 		m_associatedWin->setUnclosable(false);
 		m_associatedWin->removeFromOwnDB(m_segmentationPoly);
+		m_associatedWin->removeFromOwnDB(m_clipBox);
 	}
 
 	ccOverlayDialog::stop(accepted);
@@ -328,6 +342,8 @@ bool ccGraphicalSegmentationTool::addEntity(ccHObject* entity)
 
 		cloud->resetVisibilityArray();
 		m_toSegment.insert(cloud);
+		//TODO : could be defered and init by smthng like m_clipBox.setAssociatedEntities(m_toSegment); as it's not visible at segmentation start
+		m_clipBox->addAssociatedEntity(cloud);
 
 		//automatically add cloud's children
 		for (unsigned i=0; i<entity->getChildrenNumber(); ++i)
@@ -369,6 +385,8 @@ bool ccGraphicalSegmentationTool::addEntity(ccHObject* entity)
 
 			mesh->getAssociatedCloud()->resetVisibilityArray();
 			m_toSegment.insert(mesh);
+			//TODO: cf. supra
+			m_clipBox->addAssociatedEntity(mesh);
 			result = true;
 		}
 	}
@@ -641,6 +659,8 @@ void ccGraphicalSegmentationTool::segment(bool keepPointsInside)
 		ccGenericPointCloud::VisibilityTableType* visibilityArray = cloud->getTheVisibilityArray();
 		assert(visibilityArray);
 
+		const ccBBox* clipBox = &m_clipBox->getBox();
+
 		unsigned cloudSize = cloud->size();
 
 		//we project each point and we check if it falls inside the segmentation polyline
@@ -651,17 +671,19 @@ void ccGraphicalSegmentationTool::segment(bool keepPointsInside)
 		{
 			if (visibilityArray->getValue(i) == POINT_VISIBLE)
 			{
+
 				const CCVector3* P3D = cloud->getPoint(i);
+				if(clipBox->contains(*P3D)) {
+					CCVector3d Q2D;
+					camera.project(*P3D, Q2D);
 
-				CCVector3d Q2D;
-				camera.project(*P3D, Q2D);
+					CCVector2 P2D(	static_cast<PointCoordinateType>(Q2D.x-half_w),
+													static_cast<PointCoordinateType>(Q2D.y-half_h) );
 
-				CCVector2 P2D(	static_cast<PointCoordinateType>(Q2D.x-half_w),
-								static_cast<PointCoordinateType>(Q2D.y-half_h) );
-				
-				bool pointInside = CCLib::ManualSegmentationTools::isPointInsidePoly(P2D, m_segmentationPoly);
+					bool pointInside = CCLib::ManualSegmentationTools::isPointInsidePoly(P2D, m_segmentationPoly);
 
-				visibilityArray->setValue(i, keepPointsInside != pointInside ? POINT_HIDDEN : POINT_VISIBLE );
+					visibilityArray->setValue(i, keepPointsInside != pointInside ? POINT_HIDDEN : POINT_VISIBLE );
+				}
 			}
 		}
 	}

@@ -26,7 +26,7 @@
 
 //Qt
 #include <QObject>
-#include <QtCore/QSet.h>
+#include <QtCore/QSet>
 
 //! Clipping box
 class QCC_DB_LIB_API ccClipBox : public QObject, public ccHObject, public ccInteractor
@@ -44,11 +44,14 @@ public:
 	//! Sets associated entity
 	/** Warning: resets the current clipping box
 	**/
-	bool setAssociatedEntity(ccHObject* associatedEntity);
+	bool setAssociatedEntity(ccHObject* entity);
 
-	bool setAssociatedEntities(QSet<ccHObject*> associatedEntities);
+	//! AddAssociatedEntity
+	/** Warning: resets the current clipping box
+	**/
+	bool addAssociatedEntity(ccHObject *entity);
 
-	//TODO: addAssociatedE and removeAssociated ?
+	//TODO: removeAssociatedE ?
 	//inherited from ccHObject
 	virtual ccBBox getOwnBB(bool withGLFeatures = false) override;
 

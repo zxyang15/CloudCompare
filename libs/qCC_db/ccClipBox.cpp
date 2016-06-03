@@ -358,13 +358,11 @@ bool ccClipBox::setAssociatedEntity(ccHObject* entity)
 	return true;
 }
 
-bool ccClipBox::setAssociatedEntities(QSet<ccHObject*> entities) {
-	//release previous one
-	if (!m_associatedEntities.empty()) {
-		for (auto entityPtr : m_associatedEntities)
-			entityPtr->removeAllClipPlanes();
+bool ccClipBox::addAssociatedEntity(ccHObject *entity) {
+	if (entity)
+	{
+		m_associatedEntities.insert(entity);
 	}
-	m_associatedEntities = entities;
 	reset();
 	return true;
 }

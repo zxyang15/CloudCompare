@@ -106,7 +106,7 @@ void ccPolyline::importParametersFrom(const ccPolyline& poly)
 	set2DMode(poly.m_mode2D);
 	setForeground(poly.m_foreground);
 	setVisible(poly.isVisible());
-	lockVisibility(poly.isVisiblityLocked());
+	lockVisibility(poly.isVisibilityLocked());
 	setColor(poly.m_rgbColor);
 	setWidth(poly.m_width);
 	showColors(poly.colorsShown());

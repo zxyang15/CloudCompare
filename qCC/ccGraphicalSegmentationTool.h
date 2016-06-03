@@ -29,6 +29,7 @@
 
 //GUI
 #include <ui_graphicalSegmentationDlg.h>
+#include <ccClipBox.h>
 
 class ccPolyline;
 class ccPointCloud;
@@ -126,6 +127,8 @@ protected:
 
 	//! Current process state
 	unsigned m_state;
+
+	ccClipBox* m_clipBox;
 
 	//! Segmentation polyline
 	ccPolyline* m_segmentationPoly;

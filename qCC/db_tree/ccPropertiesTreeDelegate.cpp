@@ -388,7 +388,7 @@ void ccPropertiesTreeDelegate::fillWithHObject(ccHObject* _obj)
 	appendRow( ITEM("Name"), ITEM(_obj->getName(),Qt::ItemIsEditable,OBJECT_NAME) );
 
 	//visibility
-	if (!_obj->isVisiblityLocked())
+	if (!_obj->isVisibilityLocked())
 		appendRow( ITEM("Visible"), CHECKABLE_ITEM(_obj->isVisible(),OBJECT_VISIBILITY) );
 
 	//normals

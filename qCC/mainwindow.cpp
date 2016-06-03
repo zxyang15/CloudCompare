@@ -6154,6 +6154,7 @@ void MainWindow::activateSegmentationMode()
 	for (size_t i=0; i<selNum; ++i)
 		m_gsTool->addEntity(m_selectedEntities[i]);
 
+
 	if (m_gsTool->getNumberOfValidEntities() == 0)
 	{
 		ccConsole::Error("No segmentable entity in active window!");

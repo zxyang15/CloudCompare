@@ -62,9 +62,9 @@ public:  //drawing and drawing options
 	//! Toggles visibility
 	inline virtual void toggleVisibility() { setVisible(!isVisible()); }
 
-	//! Returns whether visibilty is locked or not
-	inline virtual bool isVisiblityLocked() const { return m_lockedVisibility; }
-	//! Locks/unlocks visibilty
+	//! Returns whether visibility is locked or not
+	inline virtual bool isVisibilityLocked() const { return m_lockedVisibility; }
+	//! Locks/unlocks visibility
 	/** If visibility is locked, the user won't be able to modify it
 		(via the properties tree for instance).
 	**/
@@ -75,8 +75,8 @@ public:  //drawing and drawing options
 	//! Selects/unselects entity
 	inline virtual void setSelected(bool state) { m_selected = state; }
 
-	//! Returns main OpenGL paramters for this entity
-	/** These parameters are deduced from the visiblity states
+	//! Returns main OpenGL parameters for this entity
+	/** These parameters are deduced from the visibility states
 		of its different features (points, normals, etc.).
 		\param params a glDrawParams structure
 	**/
@@ -111,7 +111,7 @@ public: //scalar fields
 	**/
 	inline virtual bool hasScalarFields() const  { return false; }
 
-	//! Sets active scalarfield visibility
+	//! Sets active scalar field visibility
 	inline virtual void showSF(bool state) { m_sfDisplayed = state; }
 
 	//! Toggles SF display state
@@ -138,7 +138,7 @@ public: //Name display in 3D
 
 public: //Temporary color
 
-	//! Returns whether colors are currently overriden by a temporary (unique) color
+	//! Returns whether colors are currently overridden by a temporary (unique) color
 	/** See ccDrawableObject::setTempColor.
 	**/
 	inline virtual bool isColorOverriden() const { return m_colorIsOverriden; }
@@ -215,7 +215,7 @@ public: //Transformation matrix management (for display only)
 	**/
 	virtual void resetGLTransformation();
 
-	//! Mutliplies (left) current GL transformation by a rotation matrix
+	//! Multiplies (left) current GL transformation by a rotation matrix
 	/** 'GLtrans = M * GLtrans'
 		Note: GL transformation is automatically enabled.
 		See ccDrawableObject::setGLTransformation.
