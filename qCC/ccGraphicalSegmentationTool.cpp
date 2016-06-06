@@ -67,6 +67,7 @@ ccGraphicalSegmentationTool::ccGraphicalSegmentationTool(QWidget* parent)
 	connect(validAndDeleteButton,				SIGNAL(clicked()),		this,	SLOT(applyAndDelete()));
 	connect(cancelButton,						SIGNAL(clicked()),		this,	SLOT(cancel()));
 	connect(pauseButton,						SIGNAL(toggled(bool)),	this,	SLOT(pauseSegmentationMode(bool)));
+	connect(clippingButton, SIGNAL(toggled(bool)),	this,	SLOT(editClippingBoxMode(bool)));
 
 	//selection modes
 	connect(actionSetPolylineSelection,			SIGNAL(triggered()),	this,	SLOT(doSetPolylineSelection()));
@@ -234,12 +235,8 @@ bool ccGraphicalSegmentationTool::start()
 
 	reset();
 
-	//FIXME FakeBB fo test purpose
-	ccBBox fakeBB(m_clipBox->getBox().minCorner() /4.,m_clipBox->getBox().maxCorner() /4. );
-	m_clipBox->setBox(fakeBB);
 	m_clipBox->setVisible(true);
 	m_clipBox->setEnabled(true);
-	m_clipBox->setSelected(true);
 	m_associatedWin->addToOwnDB(m_clipBox);
 
 	return ccOverlayDialog::start();
@@ -254,7 +251,7 @@ void ccGraphicalSegmentationTool::removeAllEntities(bool unallocateVisibilityArr
 			ccHObjectCaster::ToGenericPointCloud(*p)->unallocateVisibilityArray();
 		}
 	}
-	m_clipBox->removeAssociatedEntities();
+	m_clipBox->removeAssociatedEntities(!unallocateVisibilityArrays); //FIXME => what is done in MainWindow::deactivateSegmentationMode break the encapsulation somehow.
 	m_toSegment.clear();
 }
 
@@ -738,6 +735,24 @@ void ccGraphicalSegmentationTool::pauseSegmentationMode(bool state)
 	pauseButton->blockSignals(false);
 
 	m_associatedWin->redraw(!state);
+}
+
+void ccGraphicalSegmentationTool::editClippingBoxMode(bool state) {
+	if(state){
+		pauseSegmentationMode(true);
+		pauseSegmentationMode(false);
+		m_clipBox->setSelected(true);
+		m_associatedWin->setInteractionMode(ccGLWindow::TRANSFORM_CAMERA());
+		m_associatedWin->setPickingMode(ccGLWindow::DEFAULT_PICKING);
+	} else {
+		m_clipBox->setSelected(false);
+		m_associatedWin->setInteractionMode(ccGLWindow::INTERACT_SEND_ALL_SIGNALS);
+		m_associatedWin->setPickingMode(ccGLWindow::NO_PICKING);
+	}
+	m_associatedWin->redraw();
+	clippingButton->blockSignals(true);
+	clippingButton->setChecked(state);
+	clippingButton->blockSignals(false);
 }
 
 void ccGraphicalSegmentationTool::doSetPolylineSelection()

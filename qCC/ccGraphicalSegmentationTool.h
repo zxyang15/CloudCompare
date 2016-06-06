@@ -93,6 +93,7 @@ protected slots:
 	void closeRectangle();
 	void updatePolyLine(int x, int y, Qt::MouseButtons buttons);
 	void pauseSegmentationMode(bool);
+	void editClippingBoxMode(bool);
 	void doSetPolylineSelection();
 	void doSetRectangularSelection();
 	void doActionUseExistingPolyline();
@@ -117,7 +118,7 @@ protected:
 	{
 		POLYLINE		= 1,
 		RECTANGLE		= 2,
-		//...			= 4,
+		//...			= 4, //TODO: CLIPPLING ?
 		//...			= 8,
 		//...			= 16,
 		PAUSED			= 32,

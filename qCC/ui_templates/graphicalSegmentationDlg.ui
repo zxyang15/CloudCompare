@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>251</width>
-    <height>26</height>
+    <width>291</width>
+    <height>29</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -72,6 +72,16 @@
      </property>
      <property name="popupMode">
       <enum>QToolButton::MenuButtonPopup</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QToolButton" name="clippingButton">
+     <property name="text">
+      <string>CB</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
      </property>
     </widget>
    </item>

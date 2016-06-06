@@ -51,7 +51,10 @@ public:
 	**/
 	bool addAssociatedEntity(ccHObject *entity);
 
-	bool removeAssociatedEntities();
+	//! remove All associated entities
+	/** cleanOnly = true if we want to clean m_associatedEntities set
+  **/
+	bool removeAssociatedEntities(bool cleanOnly = false);
 
 	//inherited from ccHObject
 	virtual ccBBox getOwnBB(bool withGLFeatures = false) override;
@@ -125,7 +128,6 @@ public:
 	//! Returns the box parameters
 	void get(ccBBox& extents, ccGLMatrix& transformation);
 
-	//TODO: most problematic part ?
 	//! Associated entity
 	inline ccHObject* getAssociatedEntity() const { return m_associatedEntities.toList()[0]; }
 

@@ -202,7 +202,6 @@ ccClipBox::ccClipBox(ccHObject* associatedEntity, QString name/*= QString("clipp
 	setAssociatedEntity(associatedEntity);
 }
 
-//TODO
 ccClipBox::~ccClipBox()
 {
 	removeAssociatedEntities();
@@ -216,9 +215,9 @@ void ccClipBox::update()
 	}
 
 #ifdef USE_OPENGL
-    for(auto entityPtr : m_associatedEntities)
-		entityPtr->removeAllClipPlanes();
-	
+	for(auto entityPtr : m_associatedEntities)
+			entityPtr->removeAllClipPlanes();
+
 	//now add the 6 box clipping planes
 	ccBBox extents;
 	ccGLMatrix transformation;
@@ -309,12 +308,15 @@ void ccClipBox::get(ccBBox& extents, ccGLMatrix& transformation)
 
 bool ccClipBox::setAssociatedEntity(ccHObject* entity)
 {
+
 	//release previous one
 	if (!m_associatedEntities.empty())
 	{
+
 #ifdef USE_OPENGL
 		for(auto entityPtr : m_associatedEntities)
-			entityPtr->removeAllClipPlanes();
+			if(entityPtr) //FIXME could be erased... cf mainwindow.cpp:6385
+				entityPtr->removeAllClipPlanes();
 #else
 		ccGenericPointCloud* points = ccHObjectCaster::ToGenericPointCloud(m_associatedEntity);
 		if (points)
@@ -322,7 +324,6 @@ bool ccClipBox::setAssociatedEntity(ccHObject* entity)
 #endif
 	}
 	m_associatedEntities.clear();
-
 	//try to initialize new one
 	if (entity)
 	{
@@ -358,8 +359,14 @@ bool ccClipBox::setAssociatedEntity(ccHObject* entity)
 	return true;
 }
 
-bool ccClipBox::removeAssociatedEntities() {
-	setAssociatedEntity(0);
+bool ccClipBox::removeAssociatedEntities(bool cleanOnly) {
+	if(cleanOnly) {
+		m_associatedEntities.clear();
+		return true;
+	}
+	else {
+		return setAssociatedEntity(0);
+	}
 }
 
 
@@ -735,7 +742,6 @@ PointCoordinateType ccClipBox::computeArrowsScale() const
 
 	if (!m_associatedEntities.empty())
 	{
-		//TODO: not sure of that...
 		ccBBox cumulativeBBox;
 		for(auto entityPtr : m_associatedEntities)
 			cumulativeBBox += entityPtr->getOwnBB();
