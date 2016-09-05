@@ -118,7 +118,7 @@ protected:
 	{
 		POLYLINE		= 1,
 		RECTANGLE		= 2,
-		//...			= 4, //TODO: CLIPPLING ?
+		CLIPPING			= 4,
 		//...			= 8,
 		//...			= 16,
 		PAUSED			= 32,

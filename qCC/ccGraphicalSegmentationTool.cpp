@@ -60,20 +60,20 @@ ccGraphicalSegmentationTool::ccGraphicalSegmentationTool(QWidget* parent)
 
 	setupUi(this);
 
-	connect(inButton,							SIGNAL(clicked()),		this,	SLOT(segmentIn()));
+	connect(inButton,							  SIGNAL(clicked()),		this,	SLOT(segmentIn()));
 	connect(outButton,							SIGNAL(clicked()),		this,	SLOT(segmentOut()));
 	connect(razButton,							SIGNAL(clicked()),		this,	SLOT(reset()));
 	connect(validButton,						SIGNAL(clicked()),		this,	SLOT(apply()));
-	connect(validAndDeleteButton,				SIGNAL(clicked()),		this,	SLOT(applyAndDelete()));
+	connect(validAndDeleteButton,		SIGNAL(clicked()),		this,	SLOT(applyAndDelete()));
 	connect(cancelButton,						SIGNAL(clicked()),		this,	SLOT(cancel()));
 	connect(pauseButton,						SIGNAL(toggled(bool)),	this,	SLOT(pauseSegmentationMode(bool)));
-	connect(clippingButton, SIGNAL(toggled(bool)),	this,	SLOT(editClippingBoxMode(bool)));
+	connect(clippingButton,         SIGNAL(toggled(bool)),	this,	SLOT(editClippingBoxMode(bool)));
 
 	//selection modes
 	connect(actionSetPolylineSelection,			SIGNAL(triggered()),	this,	SLOT(doSetPolylineSelection()));
-	connect(actionSetRectangularSelection,		SIGNAL(triggered()),	this,	SLOT(doSetRectangularSelection()));
+	connect(actionSetRectangularSelection,	SIGNAL(triggered()),	this,	SLOT(doSetRectangularSelection()));
 	//import/export options
-	connect(actionUseExistingPolyline,			SIGNAL(triggered()),	this,	SLOT(doActionUseExistingPolyline()));
+	connect(actionUseExistingPolyline,			  SIGNAL(triggered()),	this,	SLOT(doActionUseExistingPolyline()));
 	connect(actionExportSegmentationPolyline,	SIGNAL(triggered()),	this,	SLOT(doExportSegmentationPolyline()));
 
 	//add shortcuts
@@ -285,6 +285,8 @@ void ccGraphicalSegmentationTool::reset()
 		{
 			ccHObjectCaster::ToGenericPointCloud(*p)->resetVisibilityArray();
 		}
+
+		m_clipBox->reset();
 
 		if (m_associatedWin)
 			m_associatedWin->redraw(false);
@@ -738,18 +740,27 @@ void ccGraphicalSegmentationTool::pauseSegmentationMode(bool state)
 }
 
 void ccGraphicalSegmentationTool::editClippingBoxMode(bool state) {
+
 	if(state){
 		pauseSegmentationMode(true);
 		pauseSegmentationMode(false);
 		m_clipBox->setSelected(true);
 		m_associatedWin->setInteractionMode(ccGLWindow::TRANSFORM_CAMERA());
 		m_associatedWin->setPickingMode(ccGLWindow::DEFAULT_PICKING);
+		m_state = CLIPPING;
+		m_somethingHasChanged = true;
+		razButton->setEnabled(true);
+		pauseButton->setEnable(false);
+
 	} else {
 		m_clipBox->setSelected(false);
-		m_associatedWin->setInteractionMode(ccGLWindow::INTERACT_SEND_ALL_SIGNALS);
 		m_associatedWin->setPickingMode(ccGLWindow::NO_PICKING);
+		pauseSegmentationMode(false);
 	}
+
+
 	m_associatedWin->redraw();
+
 	clippingButton->blockSignals(true);
 	clippingButton->setChecked(state);
 	clippingButton->blockSignals(false);
