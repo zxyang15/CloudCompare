@@ -41,7 +41,10 @@ int compute_normals(const typename pcl::PointCloud<PointInT>::Ptr incloud,
 					const bool useKnn, //true if use knn, false if radius search
 					typename pcl::PointCloud<PointOutT>::Ptr outcloud)
 {
-	typename pcl::NormalEstimationOMP<PointInT, PointOutT> normal_estimator;
+	// gcc & clang that installed from Homebrew on MacOS keep reporting some linking errors, and it seems like
+	// these errors have something to do with OpenMP
+	//typename pcl::NormalEstimationOMP<PointInT, PointOutT> normal_estimator;
+	typename pcl::NormalEstimation<PointInT, PointOutT> normal_estimator;
 	//typename pcl::PointCloud<PointOutT>::Ptr normals (new pcl::PointCloud<PointOutT>);
 
 	if (useKnn) //use knn
